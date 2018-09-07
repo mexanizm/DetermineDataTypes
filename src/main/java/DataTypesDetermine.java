@@ -1,5 +1,7 @@
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -10,6 +12,8 @@ public class DataTypesDetermine {
     private static final Pattern tStringNum = Pattern.compile("\\d+");
     private static final Pattern tStringFNum = Pattern.compile("(\\d+\\.\\d+)||(\\d+\\,\\d+)");
     private static final Pattern tIsJson = Pattern.compile("\\{.*\\:\\{.*\\:.*\\}\\}" , Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+
+    public static ArrayList<String> noPrimitive = new ArrayList<>(Arrays.asList("String" , "Undefined" , "json"));
 
     private static DataTypesDetermine instance = null;
 
@@ -45,8 +49,8 @@ public class DataTypesDetermine {
                     restypes.add("int");
                     restypes.add(Integer.parseInt(str));
                 }else {
-                    restypes.add("Long");
-                    restypes.add(str);
+                    restypes.add("long");
+                    restypes.add(Long.parseLong(str));
                 }
             }else{
                 Matcher matcherDouble = tStringFNum.matcher(str);
@@ -56,7 +60,7 @@ public class DataTypesDetermine {
                         restypes.add(Double.parseDouble(str));
                     }else if(matcherDouble.group(2) != null){
                         restypes.add("double");
-                        restypes.add(str.replace("," , "."));
+                        restypes.add(Double.parseDouble(str.replace("," , ".")));
                     }
                 }else{
                     restypes.add("Undefined");
@@ -65,20 +69,7 @@ public class DataTypesDetermine {
             }
         }
         if(data instanceof Integer || data instanceof Long || data instanceof Double){
-            String primitiveName = "";
-            Class typeClass = data.getClass();
-            switch (typeClass.getSimpleName()){
-                case "Integer":
-                    primitiveName = "int";
-                    break;
-                case "Double":
-                    primitiveName = "double";
-                    break;
-                case "Long":
-                    primitiveName = "long";
-                    break;
-            }
-            restypes.add(primitiveName);
+            restypes.add(getPrimitiveFromClass(data));
             restypes.add((Serializable) data);
         }
         return restypes;
@@ -98,6 +89,20 @@ public class DataTypesDetermine {
 
     public static boolean isJson(String str){
         return tIsJson.matcher(str).matches();
+    }
+
+    public static String getPrimitiveFromClass(Object object){
+        Class<?> cls = object.getClass();
+        String primitiveName = null;
+        if(!noPrimitive.contains(cls.getSimpleName())) {
+            try {
+                Field fi = cls.getField("TYPE");
+                primitiveName = String.valueOf(fi.get(cls));
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return primitiveName;
     }
 
 }

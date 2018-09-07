@@ -1,4 +1,6 @@
 import org.junit.Test;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import static junit.framework.TestCase.assertEquals;
@@ -16,6 +18,7 @@ public class tests {
         testMap.put("33" , "int");
         testMap.put("44.5" , "double");
         testMap.put("50,8" , "double");
+        testMap.put("92233720368547758" , "long");
         testMap.put(10 , "int");
         testMap.put(10.1 , "double");
         testMap.put(0x00 , "int");
@@ -28,9 +31,15 @@ public class tests {
         HashMap<String , Object> result = new HashMap<>();
         System.out.println(testMap);
         testMap.entrySet().iterator().forEachRemaining((v)->{
-            result.put(v.getKey().toString() , dtm.castDataTypeValues(v.getKey()));
-            assertEquals(v.getValue() , dtm.castDataTypeValues(v.getKey()).get(0));
+            ArrayList value = dtm.castDataTypeValues(v.getKey());
+            String prName = DataTypesDetermine.getPrimitiveFromClass(value.get(1));
+            result.put(v.getKey().toString() , value);
+//            assertEquals(v.getValue() , value.get(0));
+            assertEquals(v.getValue() , ( prName == null ? value.get(0) : prName ));
         });
         System.out.println(result);
     }
+
+
+
 }
