@@ -1,3 +1,5 @@
+import com.google.gson.JsonElement;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -13,7 +15,9 @@ public class DataTypesDetermine {
     private static final Pattern tStringFNum = Pattern.compile("(\\d+\\.\\d+)||(\\d+\\,\\d+)");
     private static final Pattern tIsJson = Pattern.compile("\\{.*\\:\\{.*\\:.*\\}\\}" , Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 
-    public static ArrayList<String> noPrimitive = new ArrayList<>(Arrays.asList("String" , "Undefined" , "json"));
+    private static final Pattern tNumType = Pattern.compile("(?<int>\\d+)||(?<double>\\d+\\.\\d+)||(?<dobledel>\\d+\\,\\d+)");
+
+    public static ArrayList<String> noPrimitive = new ArrayList<>(Arrays.asList("String" , "Undefined" , "json" , "JsonElement"));
 
     private static DataTypesDetermine instance = null;
 
@@ -29,11 +33,19 @@ public class DataTypesDetermine {
      * @param  data any Object
      * @return returns array [ typeName , valueCastToType ]
      */
-    public ArrayList<Serializable> castDataTypeValues(Object data){
+    public static ArrayList<Serializable> castDataTypeValues(Object data){
         if(data == null){return null;}
         ArrayList<Serializable> restypes = new ArrayList<Serializable>();
 
-        if(isJson( String.valueOf(data)) ){
+        if(data instanceof JsonElement){
+            if(((JsonElement) data).isJsonPrimitive()){
+                data = castFromJsonData((JsonElement) data);
+            }else{
+                restypes.add("JsonElement");
+                restypes.add((Serializable) data);
+                return (ArrayList<Serializable>) data;
+            }
+        }else if(isJson( String.valueOf(data)) ){
             restypes.add("json");
             restypes.add(String.valueOf(data));
             return restypes;
@@ -41,6 +53,11 @@ public class DataTypesDetermine {
 
         if(data instanceof String){
             String str = String.valueOf(data).trim();
+            if(str.isEmpty()){
+                restypes.add("String");
+                restypes.add(str);
+                return restypes;
+            }
             Matcher match = tString.matcher(str);
             if(match.matches()){
                 restypes.add("String");
@@ -64,8 +81,9 @@ public class DataTypesDetermine {
                         restypes.add(Double.parseDouble(str.replace("," , ".")));
                     }
                 }else{
-                    restypes.add("Undefined");
+                    restypes.add("String");
                     restypes.add( str );
+                    restypes.add("Undefined");
                 }
             }
         }
@@ -92,6 +110,27 @@ public class DataTypesDetermine {
         return tIsJson.matcher(str).matches();
     }
 
+    public static Object getFromNumber(Number num){
+        Matcher matcher = tNumType.matcher(String.valueOf(num));
+        String numStr = String.valueOf(num);
+        if(matcher.matches()){
+            if(matcher.group("int") != null){
+                if(isIntInRange(numStr)){
+                    return Integer.parseInt(numStr);
+                }else{
+                    return Long.parseLong(numStr);
+                }
+            }
+            if(matcher.group("double") != null){
+                return Double.parseDouble(numStr);
+            }
+            if(matcher.group("dobledel") != null){
+               return Double.parseDouble(numStr.replace("," , "."));
+            }
+        }
+        return null;
+    }
+
     public static String getPrimitiveFromClass(Object object){
         Class<?> cls = object.getClass();
         String primitiveName = null;
@@ -104,6 +143,19 @@ public class DataTypesDetermine {
             }
         }
         return primitiveName;
+    }
+
+    public static Object castFromJsonData(JsonElement data){
+        if(data.isJsonPrimitive()){
+            if(data.getAsJsonPrimitive().isString()){
+                return data.getAsJsonPrimitive().getAsString();
+            }else if(data.getAsJsonPrimitive().isNumber()){
+                return getFromNumber(data.getAsJsonPrimitive().getAsNumber());
+            }
+        }else{
+            return data;
+        }
+        return null;
     }
 
 }

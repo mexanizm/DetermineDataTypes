@@ -1,11 +1,33 @@
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.junit.Test;
 
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import static junit.framework.TestCase.assertEquals;
 
 public class tests {
+
+    @Test
+    public void testJson() throws Exception{
+        System.out.println("-----------------------------");
+        JsonParser parser = new JsonParser();
+        JsonElement obj = parser.parse(new FileReader("/www/DataTypeDetermine/src/main/resources/sample.json"));
+        JsonElement data = obj.getAsJsonObject().get("data");
+        data.getAsJsonObject().entrySet().iterator().forEachRemaining((e)->{
+            if(e.getValue().isJsonPrimitive()){
+                ArrayList al = DataTypesDetermine.castDataTypeValues(e.getValue());
+                if(al.size() > 0){
+                    System.out.println("al " + al + " -> " + al.get(1).getClass().getSimpleName());
+                }else{
+                    System.out.println("Invalid  = " + e.getValue());
+                }
+            }
+        });
+
+    }
 
     @Test
     public void testDetermine() throws Exception{
@@ -23,7 +45,7 @@ public class tests {
         testMap.put(10.1 , "double");
         testMap.put(0x00 , "int");
         testMap.put(0x01 , "int");
-        testMap.put("\\uF93D\\uF936\\uF949\\uF942" , "Undefined");
+        testMap.put("\\uF93D\\uF936\\uF949\\uF942" , "String");
         testMap.put("{\"Brisbane\":{\"HasAccess\":false,\"IsVesselAdmin\":true,\"IsCarsUser\":false},\"Sydney\":{\"HasAccess\":false,\"IsVesselAdmin\":true,\"IsCarsUser\":true},\"Melbourne\":{\"HasAccess\":false,\"IsVesselAdmin\":false,\"IsCarsUser\":false},\"Fremantle\":{\"HasAccess\":false,\"IsVesselAdmin\":false,\"IsCarsUser\":false},\"Test Terminal\":{\"HasAccess\":false,\"IsVesselAdmin\":false,\"IsCarsUser\":false}}" , "json");
 
         DataTypesDetermine dtm = DataTypesDetermine.getNewInstance();
@@ -38,6 +60,14 @@ public class tests {
             assertEquals(v.getValue() , ( prName == null ? value.get(0) : prName ));
         });
         System.out.println(result);
+    }
+
+    @Test
+    public void testHash() throws  Exception{
+        String value = "md5:4751b758d479fc2abc6ef66fafc77b41";
+        ArrayList ar = DataTypesDetermine.getNewInstance().castDataTypeValues(value);
+        assertEquals("String" , ar.get(0));
+        System.out.println(ar);
     }
 
 
