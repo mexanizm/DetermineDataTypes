@@ -36,6 +36,7 @@ public class DataTypesDetermine {
         if(isJson( String.valueOf(data)) ){
             restypes.add("json");
             restypes.add(String.valueOf(data));
+            return restypes;
         }
 
         if(data instanceof String){
