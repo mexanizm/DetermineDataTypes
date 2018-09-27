@@ -16,15 +16,10 @@ public class tests {
         JsonParser parser = new JsonParser();
         JsonElement obj = parser.parse(new FileReader("/www/DataTypeDetermine/src/main/resources/sample.json"));
         JsonElement data = obj.getAsJsonObject().get("data");
+
         data.getAsJsonObject().entrySet().iterator().forEachRemaining((e)->{
-            if(e.getValue().isJsonPrimitive()){
-                ArrayList al = DataTypesDetermine.castDataTypeValues(e.getValue());
-                if(al.size() > 0){
-                    System.out.println("al " + al + " -> " + al.get(1).getClass().getSimpleName());
-                }else{
-                    System.out.println("Invalid  = " + e.getValue());
-                }
-            }
+            DataTypesDetermine.ResultCastData rd = DataTypesDetermine.castDataTypeValues(e.getValue());
+            System.out.println( "Key input = " +  e.getKey() + "; wv = " + e.getValue() +  "; type = " + rd.getType() + "; value = " + rd.getValue() + "; meta = " + rd.getMeta() + ";");
         });
 
     }
@@ -53,11 +48,10 @@ public class tests {
         HashMap<String , Object> result = new HashMap<>();
         System.out.println(testMap);
         testMap.entrySet().iterator().forEachRemaining((v)->{
-            ArrayList value = dtm.castDataTypeValues(v.getKey());
-            String prName = DataTypesDetermine.getPrimitiveFromClass(value.get(1));
-            result.put(v.getKey().toString() , value);
-//            assertEquals(v.getValue() , value.get(0));
-            assertEquals(v.getValue() , ( prName == null ? value.get(0) : prName ));
+            DataTypesDetermine.ResultCastData value = dtm.castDataTypeValues(v.getKey());
+            String prName = DataTypesDetermine.getPrimitiveFromClass(value.getType());
+            result.put(v.getKey().toString() , value.getValue());
+            assertEquals(v.getValue() , ( prName == null ? value.getType() : prName ));
         });
         System.out.println(result);
     }
@@ -65,9 +59,8 @@ public class tests {
     @Test
     public void testHash() throws  Exception{
         String value = "md5:4751b758d479fc2abc6ef66fafc77b41";
-        ArrayList ar = DataTypesDetermine.getNewInstance().castDataTypeValues(value);
-        assertEquals("String" , ar.get(0));
-        System.out.println(ar);
+        DataTypesDetermine.ResultCastData rd = DataTypesDetermine.castDataTypeValues(value);
+        assertEquals("String" , rd.getType());
     }
 
 

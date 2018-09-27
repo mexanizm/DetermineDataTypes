@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -29,67 +30,101 @@ public class DataTypesDetermine {
         return instance;
     }
 
+    public static class ResultCastData {
+        private  String type;
+        private  Object value;
+        private  String meta;
+
+        ResultCastData(){}
+
+        ResultCastData(String type, Object val){
+            this.type = type;
+            this.value = val;
+        }
+
+        public ResultCastData(String type , Object val , String meta){
+            this.type = type;
+            this.value = val;
+            this.meta = meta;
+        }
+
+
+        public String getType() {
+            return type;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public String getMeta() {
+            return meta;
+        }
+
+        private ResultCastData set(String type, Object value){
+            this.type = type;
+            this.value = value;
+            return this;
+        }
+
+        private ResultCastData set(String type, Object value , String meta){
+            this.type = type;
+            this.value = value;
+            this.meta = meta;
+            return this;
+        }
+
+    }
+
     /**
      * @param  data any Object
      * @return returns array [ typeName , valueCastToType ]
      */
-    public static ArrayList<Serializable> castDataTypeValues(Object data){
+    public static ResultCastData castDataTypeValues(Object data){
         if(data == null){return null;}
-        ArrayList<Serializable> restypes = new ArrayList<Serializable>();
 
         if(data instanceof JsonElement){
             if(((JsonElement) data).isJsonPrimitive()){
                 data = castFromJsonData((JsonElement) data);
             }else{
-                restypes.add("JsonElement");
-                restypes.add((Serializable) data);
-                return (ArrayList<Serializable>) data;
+                return new ResultCastData("JsonElement" , data);
             }
         }else if(isJson( String.valueOf(data)) ){
-            restypes.add("json");
-            restypes.add(String.valueOf(data));
-            return restypes;
+            return  new ResultCastData("json" , data);
         }
+
+        ResultCastData restypes = new ResultCastData();
 
         if(data instanceof String){
             String str = String.valueOf(data).trim();
             if(str.isEmpty()){
-                restypes.add("String");
-                restypes.add(str);
+                restypes.set("String" , str);
                 return restypes;
             }
             Matcher match = tString.matcher(str);
             if(match.matches()){
-                restypes.add("String");
-                restypes.add(str);
+                restypes.set("String" , str);
             }else if (tStringNum.matcher(str).matches()){
                 if(isIntInRange(str)){
-                    restypes.add("int");
-                    restypes.add(Integer.parseInt(str));
+                    restypes.set("int" , Integer.parseInt(str));
                 }else {
-                    restypes.add("long");
-                    restypes.add(Long.parseLong(str));
+                    restypes.set("long" , Long.parseLong(str));
                 }
             }else{
                 Matcher matcherDouble = tStringFNum.matcher(str);
                 if(matcherDouble.matches()){
                     if(matcherDouble.group(1) != null){
-                        restypes.add("double");
-                        restypes.add(Double.parseDouble(str));
+                        restypes.set("double" , Double.parseDouble(str));
                     }else if(matcherDouble.group(2) != null){
-                        restypes.add("double");
-                        restypes.add(Double.parseDouble(str.replace("," , ".")));
+                        restypes.set("double" , Double.parseDouble(str.replace("," , ".")));
                     }
                 }else{
-                    restypes.add("String");
-                    restypes.add( str );
-                    restypes.add("Undefined");
+                    restypes.set("String" , str , "Undefined");
                 }
             }
         }
         if(data instanceof Integer || data instanceof Long || data instanceof Double){
-            restypes.add(getPrimitiveFromClass(data));
-            restypes.add((Serializable) data);
+            restypes.set(getPrimitiveFromClass(data) , data);
         }
         return restypes;
     }
@@ -157,5 +192,6 @@ public class DataTypesDetermine {
         }
         return null;
     }
+
 
 }
