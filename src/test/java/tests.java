@@ -43,12 +43,10 @@ public class tests {
         testMap.put("\\uF93D\\uF936\\uF949\\uF942" , "String");
         testMap.put("{\"Brisbane\":{\"HasAccess\":false,\"IsVesselAdmin\":true,\"IsCarsUser\":false},\"Sydney\":{\"HasAccess\":false,\"IsVesselAdmin\":true,\"IsCarsUser\":true},\"Melbourne\":{\"HasAccess\":false,\"IsVesselAdmin\":false,\"IsCarsUser\":false},\"Fremantle\":{\"HasAccess\":false,\"IsVesselAdmin\":false,\"IsCarsUser\":false},\"Test Terminal\":{\"HasAccess\":false,\"IsVesselAdmin\":false,\"IsCarsUser\":false}}" , "json");
 
-        DataTypesDetermine dtm = DataTypesDetermine.getNewInstance();
-
         HashMap<String , Object> result = new HashMap<>();
         System.out.println(testMap);
         testMap.entrySet().iterator().forEachRemaining((v)->{
-            DataTypesDetermine.ResultCastData value = dtm.castDataTypeValues(v.getKey());
+            DataTypesDetermine.ResultCastData value = DataTypesDetermine.castDataTypeValues(v.getKey());
             String prName = DataTypesDetermine.getPrimitiveFromClass(value.getType());
             result.put(v.getKey().toString() , value.getValue());
             assertEquals(v.getValue() , ( prName == null ? value.getType() : prName ));

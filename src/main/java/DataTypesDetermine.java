@@ -20,16 +20,6 @@ public class DataTypesDetermine {
 
     public static ArrayList<String> noPrimitive = new ArrayList<>(Arrays.asList("String" , "Undefined" , "json" , "JsonElement"));
 
-    private static DataTypesDetermine instance = null;
-
-    public static DataTypesDetermine getNewInstance(){
-        return instance = new DataTypesDetermine();
-    }
-
-    public static DataTypesDetermine getInstance(){
-        return instance;
-    }
-
     public static class ResultCastData {
         private  String type;
         private  Object value;
@@ -78,7 +68,7 @@ public class DataTypesDetermine {
 
     /**
      * @param  data any Object
-     * @return returns array [ typeName , valueCastToType ]
+     * @return returns ResultCastData Object { type , value , meta }
      */
     public static ResultCastData castDataTypeValues(Object data){
         if(data == null){return null;}
