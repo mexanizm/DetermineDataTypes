@@ -1,4 +1,5 @@
 import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -11,7 +12,7 @@ import java.util.stream.IntStream;
 
 public class DataTypesDetermine {
 
-    private static final Pattern tString = Pattern.compile("^(?![0-9\\.\\,]+$)[A-Za-zа-яА-ЯїЇґҐєЄіІ\\.\\s0-9_\\-]+" , Pattern.UNICODE_CHARACTER_CLASS);
+    private static final Pattern tString = Pattern.compile("^(?![0-9\\.\\,]+$)|(0{2,})[A-Za-zа-яА-ЯїЇґҐєЄіІ\\.\\s0-9_\\-]+" , Pattern.UNICODE_CHARACTER_CLASS);
     private static final Pattern tStringNum = Pattern.compile("\\d+");
     private static final Pattern tStringFNum = Pattern.compile("(\\d+\\.\\d+)||(\\d+\\,\\d+)");
     private static final Pattern tIsJson = Pattern.compile("\\{.*\\:\\{.*\\:.*\\}\\}" , Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
@@ -73,17 +74,22 @@ public class DataTypesDetermine {
     public static ResultCastData castDataTypeValues(Object data){
         if(data == null){return null;}
 
-        if(data instanceof JsonElement){
-            if(((JsonElement) data).isJsonPrimitive()){
+        if(data instanceof JsonElement) {
+            if (((JsonElement) data).isJsonPrimitive()) {
                 data = castFromJsonData((JsonElement) data);
-            }else{
-                return new ResultCastData("JsonElement" , data);
+            } else {
+                return new ResultCastData("JsonElement", data);
             }
         }else if(isJson( String.valueOf(data)) ){
             return  new ResultCastData("json" , data);
         }
 
+        if(data instanceof Boolean){
+            return new ResultCastData("boolean" , data);
+        }
+
         ResultCastData restypes = new ResultCastData();
+
 
         if(data instanceof String){
             String str = String.valueOf(data).trim();
@@ -92,6 +98,7 @@ public class DataTypesDetermine {
                 return restypes;
             }
             Matcher match = tString.matcher(str);
+            System.out.println("Match >> " + match.matches());
             if(match.matches()){
                 restypes.set("String" , str);
             }else if (tStringNum.matcher(str).matches()){
@@ -176,6 +183,8 @@ public class DataTypesDetermine {
                 return data.getAsJsonPrimitive().getAsString();
             }else if(data.getAsJsonPrimitive().isNumber()){
                 return getFromNumber(data.getAsJsonPrimitive().getAsNumber());
+            }else if(data.getAsJsonPrimitive().isBoolean()){
+                return data.getAsJsonPrimitive().getAsBoolean();
             }
         }else{
             return data;

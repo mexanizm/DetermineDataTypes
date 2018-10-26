@@ -1,5 +1,6 @@
 {
   "data": {
+    "numstring":"00019442",
     "test1": "open",
     "numberOfBids": 4,
     "numberTest":44.4,
@@ -19,6 +20,7 @@
     "title": "85. asdada ccasd ",
     "title2": "85. asdada ccasd 88",
     "testArray": [1,2,4],
-    "testObject":{ "id":1 , "name": "name" }
+    "testObject":{ "id":1 , "name": "name" },
+    "testBool": true
   }
 }

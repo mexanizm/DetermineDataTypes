@@ -24,7 +24,7 @@ public class tests {
 
     }
 
-    @Test
+//    @Test
     public void testDetermine() throws Exception{
 
         HashMap<Object,Object> testMap = new HashMap<>();
@@ -54,13 +54,19 @@ public class tests {
         System.out.println(result);
     }
 
-    @Test
+//    @Test
     public void testHash() throws  Exception{
         String value = "md5:4751b758d479fc2abc6ef66fafc77b41";
         DataTypesDetermine.ResultCastData rd = DataTypesDetermine.castDataTypeValues(value);
         assertEquals("String" , rd.getType());
     }
 
+
+//    @Test
+    public void simpleTest() throws Exception{
+        Object ss = DataTypesDetermine.castDataTypeValues("00019442");
+        System.out.println("type " + ((DataTypesDetermine.ResultCastData) ss).getType() + " >>> " + ((DataTypesDetermine.ResultCastData) ss).getValue());
+    }
 
 
 }
